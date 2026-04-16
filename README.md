@@ -1,4 +1,4 @@
-The work on emergent communication is based on the document I wrote (emergentAIcommunication.pdf).
+This work on emergent communication is based on the document I wrote (emergentAIcommunication.pdf).
 It's a long term project, where I'm implementing a couple smaller experiments
 to test some underlying hypothesis and progress.
 
