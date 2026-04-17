@@ -3,13 +3,7 @@ It's a long term project, where I'm implementing a couple smaller experiments
 to test some underlying hypothesis and make progress on matters of
 communication, symbol systems, and the geometry of meaning across languages.
 
-Two experiments (1 and 3) testing the hypothesis that **discreteness in communication
-channels is epistemically load-bearing** — not just a practical limitation but
-the mechanism that enables error detection, symbol stability, and faithful
-world-model alignment.
-
-One experiment (2) moving towards a zero knowledge proof of communications among agents,
-building on the causal work in the literature.
+The analysis of the experiments is in Report_Emergent_Comm.pdf
 
 ## Experiment 1 — Discreteness as Error Detection 
 
