@@ -152,14 +152,3 @@ interpretability layer that decodes transmitted vectors back to nearest words in
 multiple languages for human auditability, and test multi-hop degradation (A→B→C)
 comparing text vs dense.
 
----
-
-## References
-
-- Deutsch, D. (2011). *The Beginning of Infinity*. Allen Lane.
-- Lazaridou, A. & Baroni, M. (2020). Emergent multi-agent communication in
-  the deep learning era. arXiv:2006.02419.
-- Galke, L. & Raviv, L. (2024). Learning and communication pressures in
-  neural networks. *Language Development Research 5*(1), 116–143.
-- Nomura, K. et al. (2025). Decentralized collective world model for emergent
-  communication and coordination. arXiv:2504.03353.
