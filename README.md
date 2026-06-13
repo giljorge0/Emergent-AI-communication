@@ -14,9 +14,9 @@ The full experimental analysis is in `Report_Emergent_Comm.pdf`.
 
 The project has two connected research programmes:
 
-**Programme 1 — Emergent communication under channel constraints** (Exp 1–3, 1b, 3b, 9b, 14, B2, C1): referential games testing how discreteness, opacity, compression, and production cost shape the quality of emergent symbols.
+**Programme 1 — Emergent communication under channel constraints** (Exp 1–3, 1b, 3b, 9b, 14, B1, B2, B3, C1, C3): referential games testing how discreteness, opacity, compression, and production cost shape the quality of emergent symbols.
 
-**Programme 2 — Multilingual concept geometry and universal language** (Exp 4–15, A1, A2): tools treating the LaBSE multilingual embedding space as a window onto a language-independent "world of ideas," building toward a data-driven universal language.
+**Programme 2 — Multilingual concept geometry and universal language** (Exp 4–15, A1, A2, A3, C2): tools treating the LaBSE multilingual embedding space as a window onto a language-independent "world of ideas," building toward a data-driven universal language.
 
 ---
 
@@ -211,10 +211,16 @@ on English, HDBSCAN synonymy collapse, gap-score translatability tiers. Exports
 
 **Claim:** TVS generalises to naturally occurring parallel text.
 
-**Result:** Human references outperform MT for 3 of 4 words on Tatoeba contexts; mean
-weighted gap = +0.0015. Effect sizes substantially smaller than Exp 5 (Tatoeba sentences
-are not adversarially sense-diverse). Diversity weighting amplifies the gap for 1 of 4 words.
-A production run requires ~10M parallel sentence pairs or a curated sense-diverse corpus.
+**Result:** MT outperforms human references for all 8 words (mean weighted gap = −0.0212).
+This reverses the Exp 5 direction. Three factors explain it: Tatoeba references are
+crowd-sourced (not expert) translations; Google Translate is trained on distributions
+overlapping heavily with Tatoeba; and naturally occurring contexts skew toward dominant
+senses where MT is well calibrated. TVS is therefore best understood as a *stress-test*
+metric, not an average-quality metric — it should be applied to adversarially
+sense-stratified sets (≥20 contexts per sense including tail senses) rather than raw corpus
+samples.
+
+**Output:** `results/exp12_tvs_tatoeba.png`
 
 ---
 
@@ -262,7 +268,7 @@ tokens are substantially different from source words; optimal token length warra
 
 ---
 
-## Scale-up experiments: A1, A2, B2, C1
+## Scale-up and synthesis experiments: A1–A3, B1–B3, C1–C3
 
 ### Experiment A1 — Master Vocabulary at Scale
 
@@ -300,6 +306,68 @@ Re-runs Exp 9/10 probes at 10× scale using A1 vocabulary + LaBSE NN translation
 Transitivity NOT_DETECTED is the most definitive result: 200 verbs, identical to majority
 baseline. Zipf structure strengthens at scale. Frame role geometry persists (ρ≈0.59,
 p<0.0001) but drops from Exp 10 due to noisier automatic annotation.
+
+---
+
+### Experiment A3 — Multi-Hop Relay at 200 Concepts
+
+Resolves the ceiling effect in Exp 8's multi-hop relay by evaluating five protocols across
+nhops ∈ {0,…,8} and σ ∈ {0.0, 0.05, 0.1, 0.2, 0.3} on 200 held-out concepts.
+
+**Key results (σ=0.1):**
+- Raw LaBSE: 99.5% at 2 hops, 87.0% at 3 hops — most relay-resilient
+- Text: 99.5% at hop 1 → 39.0% at hop 2 → 3.0% at hop 3 (step-wise collapse)
+- Dense k=16: 57.5% at hop 1, degrades smoothly; larger k degrades more gradually
+- The Pareto structure from C1 is directly visible: high-redundancy protocols degrade
+  slowly; compressed protocols degrade fast
+
+**Output:** `results/exp_a3_multihop.png`
+
+---
+
+### Experiment B1 — ZK Failure-Mode Taxonomy
+
+Five communication variants (full communication, receiver ignores M1, sender ignores
+query, receiver ignores M2, severed channel) are run to test whether the (CIC₁, RC, CIC₂)
+triplet produces distinct diagnostic signatures.
+
+**Key results:**
+
+| Mode | Description | Acc | CIC₁ | RC | CIC₂ | ZK |
+|---|---|---|---|---|---|---|
+| 0 | Full communication | 0.900 | 2.403 | 0.152 | 16.377 | 1.432 |
+| 1 | Receiver ignores M1 | 0.910 | 0.464 | ~0 | 18.707 | ~0 |
+| 2 | Sender ignores query | 0.764 | 0.373 | ~0 | 5.079 | 0 |
+| 3 | Receiver ignores M2 | 0.761 | 0.334 | ~0 | 3.907 | 0 |
+| 4 | Severed channel | 0.212 | 0.128 | ~0 | 0.415 | 0 |
+
+Task accuracy alone is misleading: Modes 0–3 all reach 76–91% accuracy. The additive
+ZKrevised formula (Exp 14) correctly distinguishes Mode 1 (one-way signalling) from full
+communication.
+
+**Output:** `results/exp_b1_zk_taxonomy.png`
+
+---
+
+### Experiment B3 — Phase 1 Projection Ablation
+
+Quantifies how many analogy pairs are needed for the Phase 1 compositional projection to
+yield most of its gain (raw LaBSE baseline MRR = 0.334).
+
+| n_pairs | MRR |
+|---|---|
+| 0 | 0.334 |
+| 3 | 0.675 |
+| 5 | 0.825 |
+| 9 | 0.904 |
+| 15 | 1.000 |
+
+**Key result:** 3 pairs achieve >50% of maximum gain; 5 pairs reach MRR=0.825; 15
+saturate at 1.000. The λ weight (0.25–4.0) is irrelevant — proximity loss dominates
+until enough pairs constrain the projection direction. Practical recipe: **5 antonym
+pairs + λ=1.0 + 800 epochs**.
+
+**Output:** `results/exp_b3_projection_ablation.png`
 
 ---
 
@@ -343,6 +411,41 @@ noise robustness is determined by channel type, not compression level.
 
 ---
 
+### Experiment C2 — Language-Design Loss
+
+Operationalises the multi-term loss from the theoretical proposal: proximity to the
+speaker-weighted corpus (L_prox), coverage of the interlingua concept space (L_expr), and
+simplicity (L_simp). A learnable N-token proto-vocabulary is optimised against this loss
+over the 56-concept space (10 languages).
+
+**Key result:** even N=10 proto-tokens achieve full concept coverage — LaBSE centroids
+cluster tightly enough that 10 vectors span the space. The binding constraint is L_simp,
+which grows linearly with N. The Pareto-optimal vocabulary for the current coverage
+threshold is **N=10**. Tightening coverage to cosine ≥ 0.6–0.8 would reveal the real
+vocabulary-size trade-off.
+
+**Output:** `results/exp_c2_language_design_loss.png`
+
+---
+
+### Experiment C3 — MI Entanglement Metric
+
+Two agents with separate world-model encoders (no parameter sharing) are trained on a
+10-way referential game. InfoNCE mutual information between their latent states is
+measured every 5 epochs over 100 training epochs.
+
+**Key results:**
+- MI rises monotonically from −0.310 to −0.265 (+0.045 nats) in communicating agents
+- Severed baseline fluctuates near −1.2 with no upward trend (delta ~0 nats)
+- Two-phase structure: rapid accuracy convergence (first ~20 epochs), then slow MI
+  refinement as agents synchronise internal representations
+- Together with B1 (causal ZK taxonomy), C3 provides the informational complement:
+  ZK measures causal bidirectionality; C3 measures informational integration
+
+**Output:** `results/exp_c3_mi_entanglement.png`
+
+---
+
 ## Pipeline status
 
 The universal language pipeline is now complete end-to-end:
@@ -350,22 +453,27 @@ The universal language pipeline is now complete end-to-end:
 | Component | Experiment | Status |
 |---|---|---|
 | Draft vocabulary + translatability tiers | A1, Exp 11 | ✓ (4863 concepts, 12 languages) |
-| Translation quality metric (TVS) | Exp 5, 12 | ✓ (corpus-validated) |
-| Compositional projection | Exp 9 Phase 1 | ✓ (MRR 0.126→0.451) |
+| Translation quality metric (TVS) | Exp 5, 12 | ✓ (stress-test validated; corpus caveats documented) |
+| Compositional projection | Exp 9 Phase 1, B3 | ✓ (MRR 0.126→0.451; 3–5 pairs sufficient) |
 | Frame role morphology | Exp 10, A2 | ✓ (agent ρ=0.82/0.59 at 56/409 concepts) |
-| Phoneme inventory + proto-tokens | Exp 15 | ✓ (40 concepts, 6 languages) |
-| Dense AI-AI channel | Exp 8 | ✓ (k=4 beats text) |
-| ZK communication metric | Exp 2, 14 | ✓ (binary detection; not yet continuous) |
+| Phoneme inventory + proto-tokens | Exp 15 | ✓ (40 concepts, 6 languages; English-bias documented) |
+| Dense AI-AI channel | Exp 8, A3 | ✓ (k=4 beats text; relay behaviour characterised at 200 concepts) |
+| ZK communication metric | Exp 2, 14, B1 | ✓ (binary detection confirmed; failure-mode taxonomy complete) |
 | Optimal constraint configuration | Exp B2 | ✓ (τ=1.0, k=32, L=4, cost=0.2) |
 | Shannon Pareto frontier | Exp C1 | ✓ |
+| Language-design loss | Exp C2 | ✓ (operationalised; binding constraint is simplicity, not coverage) |
+| MI entanglement metric | Exp C3 | ✓ (MI rises monotonically; two-phase training confirmed) |
+| Multi-hop relay characterisation | Exp A3 | ✓ (200 concepts; ceiling effect resolved) |
 
-**Next binding constraint:** scale (500–5000 concepts, 20+ typologically diverse languages)
-and integration: running the full pipeline end-to-end with B2-optimal settings on the
-A1-scale vocabulary. Immediate next steps:
-1. Re-run A1 HDBSCAN with `min_cluster_size=3` to recover finer cluster granularity
+**Next binding constraint:** typological diversity and end-to-end integration. The full
+pipeline is complete at component level; the remaining work is running it end-to-end at
+A1 scale with B2-optimal settings. Immediate next steps:
+
+1. Re-run A1 HDBSCAN with `min_cluster_size=3` to recover finer cluster granularity (expected 2000–4000 clusters)
 2. Add NER filter to A1 to remove English proper nouns from the untranslatable tier
-3. Apply Phase 1 compositional projection to the full A1 centroid matrix
-4. Apply Exp 10 frame-role geometry to A1 vocabulary (Experiment A3)
+3. Apply Phase 1 compositional projection to the full A1 centroid matrix using 50–100 WordNet antonym pairs (B3 recipe)
+4. Expand phoneme inventory (Exp 15) to typologically diverse languages (Arabic, Mandarin, Hindi, Swahili) to correct the English proximity bias
+5. Run full end-to-end pipeline at A1 scale with τ=1.0, k=32, L=4, cost=0.2 (B2-optimal)
 
 ---
 
